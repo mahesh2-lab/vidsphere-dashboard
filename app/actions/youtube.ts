@@ -94,7 +94,7 @@ export async function fetchYouTubeVideos() {
 
     const statsResponse = await axios.get(`${YOUTUBE_API_BASE}/videos`, {
       params: {
-        part: 'statistics,snippet',
+        part: 'status,statistics,snippet',
         id: videoIds,
         access_token: accessToken,
       },  
