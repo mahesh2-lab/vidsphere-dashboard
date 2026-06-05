@@ -52,26 +52,73 @@ export function UploadForm() {
     }
   }
 
-  const simulateUpload = () => {
-    setUploadStatus('uploading')
-    setProgress(0)
+  const performUpload = async () => {
+    if (!selectedFile) return;
     
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval)
-          setUploadStatus('success')
-          return 100
+    try {
+      setUploadStatus('uploading')
+      setProgress(0)
+
+      // 1. Init resumable session
+      const initRes = await fetch('/api/youtube/upload/init', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title,
+          description,
+          visibility,
+          fileSize: selectedFile.size,
+          mimeType: selectedFile.type || 'video/mp4'
+        })
+      });
+
+      if (!initRes.ok) {
+        const errorText = await initRes.text();
+        throw new Error(errorText || 'Failed to initialize upload');
+      }
+
+      const { uploadUrl } = await initRes.json();
+
+      // 2. Upload file via XMLHttpRequest for progress tracking
+      const xhr = new XMLHttpRequest();
+      
+      xhr.upload.addEventListener('progress', (event) => {
+        if (event.lengthComputable) {
+          const percentCompleted = Math.round((event.loaded * 100) / event.total);
+          setProgress(percentCompleted);
         }
-        return prev + 5
-      })
-    }, 200)
+      });
+
+      xhr.addEventListener('load', () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          setUploadStatus('success');
+        } else {
+          console.error("Upload failed with status:", xhr.status, xhr.responseText);
+          alert('Upload failed: ' + xhr.responseText);
+          setUploadStatus('idle');
+        }
+      });
+
+      xhr.addEventListener('error', () => {
+        alert('Network error during upload');
+        setUploadStatus('idle');
+      });
+
+      xhr.open('PUT', uploadUrl, true);
+      xhr.setRequestHeader('Content-Type', selectedFile.type || 'video/mp4');
+      xhr.send(selectedFile);
+
+    } catch (error: any) {
+      console.error(error);
+      alert(error.message || 'An error occurred during upload');
+      setUploadStatus('idle');
+    }
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!selectedFile) return
-    simulateUpload()
+    performUpload()
   }
 
   const resetForm = () => {
