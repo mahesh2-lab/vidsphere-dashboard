@@ -100,7 +100,7 @@ export async function fetchYouTubeVideos() {
       },  
     })
 
-    console.log(statsResponse);
+    console.log(statsResponse.data.items);
     
 
     const channel = await db
