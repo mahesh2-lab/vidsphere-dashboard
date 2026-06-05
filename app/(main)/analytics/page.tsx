@@ -75,7 +75,7 @@ export default async function AnalyticsPage() {
                   <p className="text-gray-600 text-sm font-medium mb-2">Total Engagement</p>
                   <p className="text-3xl font-bold text-gray-900">
                     {(
-                      (videos?.reduce((sum, v) => sum + (v.commentCount ?? 0) + (v.likeCount ?? 0), 0) || 0)
+                      (videos?.reduce((sum: any, v: { commentCount: any; likeCount: any }) => sum + (v.commentCount ?? 0) + (v.likeCount ?? 0), 0) || 0)
                     ).toLocaleString()}
                   </p>
                   <div className="h-1 bg-orange-600 rounded mt-4" />

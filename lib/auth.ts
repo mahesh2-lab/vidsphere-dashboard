@@ -8,6 +8,8 @@ if (!process.env.DATABASE_URL) {
 if (!process.env.BETTER_AUTH_SECRET) {
   throw new Error("BETTER_AUTH_SECRET environment variable is not set!");
 }
+console.log("SECRET:", process.env.BETTER_AUTH_SECRET);
+
 
 const database = new Pool({
   connectionString: process.env.DATABASE_URL,
