@@ -73,9 +73,9 @@ export default async function LandingPage() {
             <div className="w-12 h-12 bg-red-100 text-red-600 rounded-lg flex items-center justify-center mb-4">
               <ShieldCheck className="w-6 h-6" />
             </div>
-            <h3 className="text-lg font-bold text-gray-900 mb-2">Secure & Private</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Transparent Data Usage</h3>
             <p className="text-gray-600 text-sm">
-              Your data is safe. We use official Google OAuth to securely authenticate your account without ever seeing your password.
+              VidSphere requests access to your YouTube account solely to read your channel statistics, fetch your uploaded videos, and allow you to upload new content directly from the dashboard. We do not sell your data or use it for any other purpose.
             </p>
           </div>
         </div>
