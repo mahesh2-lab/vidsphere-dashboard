@@ -52,38 +52,23 @@ export async function GET(request: NextRequest) {
     const snippet = channel.snippet!;
     const statistics = channel.statistics!;
 
-    // Check if channel already exists for this user
-    const existingAccount = await db.query.youtubeAccount.findFirst({
-      where: eq(youtubeAccount.userId, session.user.id),
-    });
+    // Delete any existing YouTube connection for this user
+    await db.delete(youtubeAccount).where(eq(youtubeAccount.userId, session.user.id));
+    
+    // Also delete any existing connection for this specific channel (e.g. if linked to another user account)
+    await db.delete(youtubeAccount).where(eq(youtubeAccount.channelId, channelId));
 
-    if (existingAccount) {
-      // Update
-      await db
-        .update(youtubeAccount)
-        .set({
-          channelId: channelId,
-          channelName: snippet.title ?? "Unknown",
-          thumbnailUrl: snippet.thumbnails?.default?.url ?? "",
-          accessToken: tokens.access_token ?? existingAccount.accessToken,
-          refreshToken: tokens.refresh_token ?? existingAccount.refreshToken,
-          expiresAt: tokens.expiry_date ? new Date(tokens.expiry_date) : existingAccount.expiresAt,
-          updatedAt: new Date(),
-        })
-        .where(eq(youtubeAccount.id, existingAccount.id));
-    } else {
-      // Insert
-      await db.insert(youtubeAccount).values({
-        id: randomUUID(),
-        userId: session.user.id,
-        channelId: channelId,
-        channelName: snippet.title ?? "Unknown",
-        thumbnailUrl: snippet.thumbnails?.default?.url ?? "",
-        accessToken: tokens.access_token ?? null,
-        refreshToken: tokens.refresh_token ?? null,
-        expiresAt: tokens.expiry_date ? new Date(tokens.expiry_date) : null,
-      });
-    }
+    // Safely insert the new connection
+    await db.insert(youtubeAccount).values({
+      id: randomUUID(),
+      userId: session.user.id,
+      channelId: channelId,
+      channelName: snippet.title ?? "Unknown",
+      thumbnailUrl: snippet.thumbnails?.default?.url ?? "",
+      accessToken: tokens.access_token ?? null,
+      refreshToken: tokens.refresh_token ?? null,
+      expiresAt: tokens.expiry_date ? new Date(tokens.expiry_date) : null,
+    });
 
     const response = NextResponse.redirect(new URL("/dashboard", request.url));
     response.cookies.delete("youtube_oauth_state");
