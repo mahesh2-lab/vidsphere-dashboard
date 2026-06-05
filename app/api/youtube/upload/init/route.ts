@@ -49,6 +49,9 @@ export async function POST(request: NextRequest) {
       },
     };
 
+    const reqHeaders = await headers();
+    const origin = reqHeaders.get("origin") || "";
+
     // Request the Resumable Upload URL from Google
     const response = await axios.post(
       "https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status",
@@ -59,6 +62,7 @@ export async function POST(request: NextRequest) {
           "Content-Type": "application/json",
           "X-Upload-Content-Length": fileSize.toString(),
           "X-Upload-Content-Type": mimeType || "video/*",
+          ...(origin ? { Origin: origin } : {}),
         },
         maxRedirects: 0, // We want to catch the Location header, not follow it (though Axios usually handles 200 OK for resumable init)
       }
