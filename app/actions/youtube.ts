@@ -100,6 +100,9 @@ export async function fetchYouTubeVideos() {
       },  
     })
 
+    console.log(statsResponse);
+    
+
     const channel = await db
       .select()
       .from(youtubeAccount)
