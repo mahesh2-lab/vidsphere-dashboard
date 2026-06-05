@@ -42,7 +42,6 @@ export default async function VideosPage() {
                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-900">Date</th>
                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-900">Views</th>
                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-900">Comments</th>
-                    <th className="px-6 py-4 text-right text-xs font-semibold text-gray-900">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -92,18 +91,11 @@ export default async function VideosPage() {
                             {video.commentCount ?? 0}
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <Button size="sm" variant="ghost">
-                              <Trash2 className="w-4 h-4 text-red-600" />
-                            </Button>
-                          </div>
-                        </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
+                      <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
                         <p>No videos found. Connect your YouTube channel to see your videos.</p>
                       </td>
                     </tr>

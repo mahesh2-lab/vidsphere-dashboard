@@ -9,6 +9,7 @@ import {
   BarChart3,
   Settings,
   Play,
+  UploadCloud,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -29,7 +30,11 @@ const menuItems = [
     label: 'Analytics',
     href: '/analytics',
   },
-
+  {
+    icon: UploadCloud,
+    label: 'Upload',
+    href: '/upload',
+  },
   {
     icon: Settings,
     label: 'Settings',
