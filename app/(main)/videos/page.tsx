@@ -1,7 +1,7 @@
 import { auth } from '@/lib/auth'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { getUserVideos, syncYouTubeChannel, fetchYouTubeVideos } from '@/app/actions/youtube'
+import { getUserVideos, syncYouTubeChannel, fetchYouTubeVideos, getUserChannel } from '@/app/actions/youtube'
 import { buttonVariants, Button } from '@/components/ui/button'
 import { Eye, MessageCircle, Trash2, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
@@ -14,7 +14,8 @@ export default async function VideosPage() {
     redirect('/sign-in')
   }
 
-  const videos = await getUserVideos()
+  const channel = await getUserChannel()
+  const videos = channel ? await getUserVideos() : []
 
   return (
     <>

@@ -13,7 +13,7 @@ export default async function DashboardPage() {
   }
 
   const channel = await getUserChannel()
-  const videos = await getUserVideos()
+  const videos = channel ? await getUserVideos() : []
   
   let liveStats = null
   if (channel) {

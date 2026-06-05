@@ -14,7 +14,7 @@ export default async function AnalyticsPage() {
   }
 
   const channel = await getUserChannel()
-  const videos = await getUserVideos()
+  const videos = channel ? await getUserVideos() : []
 
   // Prepare chart data
   const videoData = videos
