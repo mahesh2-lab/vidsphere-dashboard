@@ -6,7 +6,6 @@ const database = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
 
-console.log("DATABASE_URL from env:", process.env.DATABASE_URL);
 
 
 export const auth = betterAuth({

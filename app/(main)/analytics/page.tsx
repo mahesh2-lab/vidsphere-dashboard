@@ -1,8 +1,6 @@
 import { auth } from '@/lib/auth'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { Sidebar } from '@/components/sidebar'
-import { Topbar } from '@/components/topbar'
 import { getUserChannel, getUserVideos } from '@/app/actions/youtube'
 import { AnalyticsCharts } from './analytics-charts'
 import { Button } from '@/components/ui/button'
@@ -38,13 +36,9 @@ export default async function AnalyticsPage() {
 
 
   return (
-    <div className="flex h-screen bg-white">
-      <Sidebar />
-      <main className="flex-1 ml-48 overflow-auto">
-        <Topbar user={session.user} />
-        <div className="p-8">
-          <div className="flex items-center justify-between mb-8">
-            <div>
+    <>
+      <div className="flex items-center justify-between mb-8">
+        <div>
               <h1 className="text-3xl font-bold text-gray-900">Analytics Overview</h1>
               <p className="text-gray-600 mt-2">Detailed demographic data requires the YouTube Analytics API.</p>
             </div>
@@ -116,8 +110,6 @@ export default async function AnalyticsPage() {
               </div>
             </>
           )}
-        </div>
-      </main>
-    </div>
+    </>
   )
 }

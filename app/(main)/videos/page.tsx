@@ -1,8 +1,6 @@
 import { auth } from '@/lib/auth'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { Sidebar } from '@/components/sidebar'
-import { Topbar } from '@/components/topbar'
 import { getUserVideos, syncYouTubeChannel, fetchYouTubeVideos } from '@/app/actions/youtube'
 import { buttonVariants, Button } from '@/components/ui/button'
 import { Eye, MessageCircle, Trash2, RefreshCw } from 'lucide-react'
@@ -19,13 +17,9 @@ export default async function VideosPage() {
   const videos = await getUserVideos()
 
   return (
-    <div className="flex h-screen bg-white">
-      <Sidebar />
-      <main className="flex-1 ml-48 overflow-auto">
-        <Topbar user={session.user} />
-        <div className="p-8">
-          <div className="flex items-center justify-between mb-8">
-            <div>
+    <>
+      <div className="flex items-center justify-between mb-8">
+        <div>
               <h1 className="text-3xl font-bold text-gray-900">Channel Videos</h1>
               <p className="text-gray-600 mt-2">{videos?.length || 0} videos in your channel</p>
             </div>
@@ -119,8 +113,6 @@ export default async function VideosPage() {
           </div>
 
 
-        </div>
-      </main>
-    </div>
+    </>
   )
 }

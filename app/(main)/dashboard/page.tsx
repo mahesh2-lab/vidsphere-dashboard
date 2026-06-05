@@ -1,8 +1,6 @@
 import { auth } from '@/lib/auth'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { Sidebar } from '@/components/sidebar'
-import { Topbar } from '@/components/topbar'
 import { getUserChannel, getUserVideos, getLiveChannelStats } from '@/app/actions/youtube'
 import { buttonVariants } from '@/components/ui/button'
 import { Users, Eye, Clock } from 'lucide-react'
@@ -47,13 +45,9 @@ export default async function DashboardPage() {
   ]
 
   return (
-    <div className="flex h-screen bg-white">
-      <Sidebar />
-      <main className="flex-1 ml-48 overflow-auto">
-        <Topbar user={session.user} />
-        <div className="p-8">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Channel Dashboard</h1>
+    <>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Channel Dashboard</h1>
             {channel && (
               <p className="text-gray-600 mt-2">{channel.channelName}</p>
             )}
@@ -110,8 +104,6 @@ export default async function DashboardPage() {
               </div>
             </>
           )}
-        </div>
-      </main>
-    </div>
+    </>
   )
 }
