@@ -12,9 +12,8 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'YouTube Creator Platform',
-  description: 'Manage your YouTube channel and videos',
-  generator: 'v0.app',
+  title: 'Creator Dashboard',
+  description: 'A platform to manage and analyze your YouTube presence.',
   icons: {
     icon: [
       {
