@@ -14,7 +14,7 @@ export default function TermsOfService() {
         <section>
           <h2 className="text-2xl font-bold text-gray-900 mb-4">1. Acceptance of Terms</h2>
           <p>
-            By accessing or using the Creator Dashboard application ("Service"), you agree to be bound by these 
+            By accessing or using the VidSphere application ("Service"), you agree to be bound by these 
             Terms of Service. If you disagree with any part of the terms, then you may not access the Service.
           </p>
         </section>
@@ -43,7 +43,7 @@ export default function TermsOfService() {
           <h2 className="text-2xl font-bold text-gray-900 mb-4">4. Intellectual Property</h2>
           <p>
             The Service and its original content, features, and functionality are and will remain the exclusive property of 
-            the Creator Dashboard and its licensors. The Service is protected by copyright, trademark, and other laws.
+            VidSphere and its licensors. The Service is protected by copyright, trademark, and other laws.
           </p>
         </section>
 

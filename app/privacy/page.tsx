@@ -14,7 +14,7 @@ export default function PrivacyPolicy() {
         <section>
           <h2 className="text-2xl font-bold text-gray-900 mb-4">1. Introduction</h2>
           <p>
-            Welcome to the Creator Dashboard. We respect your privacy and are committed to protecting your personal data. 
+            Welcome to VidSphere. We respect your privacy and are committed to protecting your personal data. 
             This privacy policy will inform you about how we look after your personal data when you visit our website 
             and use our application, and tell you about your privacy rights.
           </p>

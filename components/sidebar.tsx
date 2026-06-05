@@ -50,9 +50,9 @@ export function Sidebar() {
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-red-600 rounded flex items-center justify-center text-white font-bold">
-            YT
+            VS
           </div>
-          <span className="font-semibold text-gray-900">Creator Platform</span>
+          <span className="font-semibold text-gray-900">VidSphere</span>
         </div>
       </div>
 

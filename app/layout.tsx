@@ -12,7 +12,7 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Creator Dashboard',
+  title: 'VidSphere',
   description: 'A platform to manage and analyze your YouTube presence.',
   icons: {
     icon: [
