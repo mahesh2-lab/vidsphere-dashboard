@@ -6,9 +6,7 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  experimental: {
-    reactCompiler: true,
-  },
+  reactCompiler: true,
   async headers() {
     return [
       {
