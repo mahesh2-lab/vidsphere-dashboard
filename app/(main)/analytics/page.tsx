@@ -2,7 +2,11 @@ import { auth } from '@/lib/auth'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { getUserChannel, getUserVideos } from '@/app/actions/youtube'
-import { AnalyticsCharts } from './analytics-charts'
+import dynamic from 'next/dynamic'
+
+const AnalyticsCharts = dynamic(() => import('./analytics-charts').then(mod => mod.AnalyticsCharts), {
+  loading: () => <div className="h-[320px] bg-gray-50 animate-pulse rounded-2xl mb-8" />
+})
 import { Button } from '@/components/ui/button'
 import { RefreshCw } from 'lucide-react'
 

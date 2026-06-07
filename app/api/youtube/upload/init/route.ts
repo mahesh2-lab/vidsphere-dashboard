@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { youtubeAccount } from "@/lib/db/schema";
+import { youtubeAccount, uploads } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { oauth2Client } from "@/lib/google";
 import axios from "axios";
+import { logApiCall } from "@/lib/api-logger";
+import { decrypt } from "@/lib/encryption";
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,11 +20,18 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, description, visibility, fileSize, mimeType } = body;
+    const { filename, bucket, fileSize, mimeType, privacyStatus, customMetadata } = body;
 
-    if (!title || !fileSize) {
+    if (!filename || !fileSize) {
       return new NextResponse("Missing required fields", { status: 400 });
     }
+
+    // Strip extension from filename to create default title
+    const videoTitle = filename.replace(/\.[^/.]+$/, "");
+
+    const customTags = Array.isArray(customMetadata) 
+      ? customMetadata.map((m: any) => `${m.key}:${m.value}`)
+      : [];
 
     const channel = await db.query.youtubeAccount.findFirst({
       where: eq(youtubeAccount.userId, session.user.id),
@@ -33,18 +42,20 @@ export async function POST(request: NextRequest) {
     }
 
     // Force refresh token to ensure valid access token
-    oauth2Client.setCredentials({ refresh_token: channel.refreshToken });
+    const decryptedRefreshToken = channel.refreshToken ? decrypt(channel.refreshToken) : null;
+    oauth2Client.setCredentials({ refresh_token: decryptedRefreshToken });
     const { credentials } = await oauth2Client.refreshAccessToken();
 
     // Prepare the video metadata
     const metadata = {
       snippet: {
-        title,
-        description,
+        title: videoTitle,
+        description: "",
         categoryId: "22", // People & Blogs default
+        tags: [bucket || "default", ...customTags],
       },
       status: {
-        privacyStatus: visibility || "private",
+        privacyStatus: privacyStatus || "unlisted",
         selfDeclaredMadeForKids: false,
       },
     };
@@ -74,7 +85,24 @@ export async function POST(request: NextRequest) {
       throw new Error("Did not receive a resumable upload URL from Google");
     }
 
-    return NextResponse.json({ uploadUrl });
+    let metadataObj: Record<string, any> = { fileSize };
+    if (Array.isArray(customMetadata)) {
+      customMetadata.forEach((curr) => {
+        if (curr.key) metadataObj[curr.key] = curr.value;
+      });
+    }
+
+    const [newUpload] = await db.insert(uploads).values({
+      userId: session.user.id,
+      title: videoTitle,
+      privacyStatus: privacyStatus || "unlisted",
+      status: "pending",
+      metadata: metadataObj,
+    }).returning({ id: uploads.id });
+
+    logApiCall(session.user.id, "/api/youtube/upload/init", "POST", 200);
+
+    return NextResponse.json({ uploadUrl, uploadId: newUpload.id });
   } catch (error: any) {
     console.error("YouTube upload init error:", error?.response?.data || error);
     return new NextResponse(

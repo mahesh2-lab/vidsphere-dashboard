@@ -6,7 +6,7 @@ export default function PrivacyPolicy() {
       <Link href="/" className="text-sm text-red-600 hover:text-red-700 font-medium mb-8 inline-block">
         &larr; Back to Home
       </Link>
-      
+
       <h1 className="text-4xl font-bold text-gray-900 mb-4">Privacy Policy</h1>
       <p className="text-gray-500 mb-12">Last updated: {new Date().toLocaleDateString()}</p>
 
@@ -14,8 +14,8 @@ export default function PrivacyPolicy() {
         <section>
           <h2 className="text-2xl font-bold text-gray-900 mb-4">1. Introduction</h2>
           <p>
-            Welcome to VidSphere. We respect your privacy and are committed to protecting your personal data. 
-            This privacy policy will inform you about how we look after your personal data when you visit our website 
+            Welcome to VidSphere. We respect your privacy and are committed to protecting your personal data.
+            This privacy policy will inform you about how we look after your personal data when you visit our website
             and use our application, and tell you about your privacy rights.
           </p>
         </section>
@@ -23,7 +23,7 @@ export default function PrivacyPolicy() {
         <section>
           <h2 className="text-2xl font-bold text-gray-900 mb-4">2. YouTube API Services</h2>
           <p className="mb-4">
-            Our application uses YouTube API Services to provide features such as displaying your channel statistics 
+            Our application uses YouTube API Services to provide features such as displaying your channel statistics
             and managing your videos. By using our application, you are agreeing to be bound by the{' '}
             <a href="https://www.youtube.com/t/terms" target="_blank" rel="noreferrer" className="text-red-600 hover:underline">
               YouTube Terms of Service

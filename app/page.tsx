@@ -6,7 +6,7 @@ import { Play, BarChart3, UploadCloud, ShieldCheck } from 'lucide-react'
 
 export default async function LandingPage() {
   const session = await auth.api.getSession({ headers: await headers() })
-  
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Navigation */}
@@ -40,7 +40,7 @@ export default async function LandingPage() {
         <p className="max-w-2xl text-xl text-gray-600 mb-10 leading-relaxed">
           Securely connect your YouTube channel to view advanced real-time analytics, manage your video library, and streamline your content workflow all in one place.
         </p>
-        
+
         <div className="flex gap-4 justify-center mb-20">
           <Link href={session?.user ? "/dashboard" : "/sign-up"} className={buttonVariants({ variant: 'default', size: 'lg', className: 'text-lg px-8 py-6' })}>
             {session?.user ? 'Go to Dashboard' : 'Get Started for Free'}
@@ -58,7 +58,7 @@ export default async function LandingPage() {
               View your live subscriber count, total channel views, and track your channel's growth seamlessly using official YouTube API integrations.
             </p>
           </div>
-          
+
           <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
             <div className="w-12 h-12 bg-red-100 text-red-600 rounded-lg flex items-center justify-center mb-4">
               <UploadCloud className="w-6 h-6" />

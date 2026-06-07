@@ -8,8 +8,9 @@ import {
   Video,
   BarChart3,
   Settings,
-  Play,
+  Folder,
   UploadCloud,
+  Key,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -21,19 +22,23 @@ const menuItems = [
   },
   {
     icon: Video,
-    label: 'Videos',
-    href: '/videos',
+    label: 'Media',
+    href: '/media',
   },
-
   {
-    icon: BarChart3,
-    label: 'Analytics',
-    href: '/analytics',
+    icon: Folder,
+    label: 'Buckets',
+    href: '/buckets',
   },
   {
     icon: UploadCloud,
     label: 'Upload',
     href: '/upload',
+  },
+  {
+    icon: Key,
+    label: 'API Keys',
+    href: '/developers/keys',
   },
   {
     icon: Settings,
@@ -65,11 +70,10 @@ export function Sidebar() {
               <Link key={item.href} href={item.href}>
                 <Button
                   variant="ghost"
-                  className={`w-full justify-start gap-3 ${
-                    isActive
+                  className={`w-full justify-start gap-3 ${isActive
                       ? 'bg-red-50 text-red-600 hover:bg-red-100'
                       : 'text-gray-700 hover:bg-gray-100'
-                  }`}
+                    }`}
                 >
                   <Icon className="w-5 h-5" />
                   {item.label}

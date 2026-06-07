@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean, integer, uniqueIndex, index } from 'drizzle-orm/pg-core'
+import { pgTable, text, timestamp, boolean, integer, uniqueIndex, index, uuid, jsonb } from 'drizzle-orm/pg-core'
 
 // Better Auth Tables
 export const user = pgTable(
@@ -86,3 +86,56 @@ export const youtubeAccount = pgTable(
   })
 )
 
+export const apiKeys = pgTable('api_keys', {
+  id:          uuid('id').defaultRandom().primaryKey(),
+  userId:      text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  name:        text('name').notNull(),
+  keyHash:     text('key_hash').notNull(),
+  prefix:      text('prefix').notNull(),           // first 10 chars, used for fast lookup
+  revokedAt:   timestamp('revoked_at'),
+  lastUsedAt:  timestamp('last_used_at'),
+  createdAt:   timestamp('created_at').defaultNow(),
+});
+ 
+// ─── NEW: Uploads table ────────────────────────────────────────────────────────
+export const uploads = pgTable('uploads', {
+  id:            uuid('id').defaultRandom().primaryKey(),
+  userId:        text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  title:         text('title').notNull(),
+  videoId:       text('video_id'),                  // YouTube video ID, set after completion
+  privacyStatus: text('privacy_status').notNull().default('unlisted'),
+  status:        text('status').notNull().default('pending'), // pending | uploading | completed | failed
+  errorMessage:  text('error_message'),
+  metadata:      jsonb('metadata'), // Custom key-value pairs
+  createdAt:     timestamp('created_at').defaultNow(),
+  completedAt:   timestamp('completed_at'),
+}, (table) => ({
+  userIdIdx: index('idx_uploads_user_id').on(table.userId),
+}));
+
+export const apiLogs = pgTable('api_logs', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  endpoint: text('endpoint').notNull(),
+  method: text('method').notNull(),
+  status: integer('status').notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (table) => {
+  return {
+    userIdIdx: index('api_logs_user_id_idx').on(table.userId),
+    createdAtIdx: index('api_logs_created_at_idx').on(table.createdAt)
+  };
+});
+
+// ─── NEW: YouTube Cache table ────────────────────────────────────────────────
+export const youtubeCache = pgTable('youtube_cache', {
+  id:        text('id').primaryKey(),
+  userId:    text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  type:      text('type').notNull(),
+  data:      jsonb('data').notNull(),
+  expiresAt: timestamp('expires_at').notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+}, (table) => ({
+  userIdIdx: index('idx_youtube_cache_user_id').on(table.userId),
+}));

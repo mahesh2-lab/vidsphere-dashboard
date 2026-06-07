@@ -9,10 +9,25 @@ export function UploadForm() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success'>('idle')
   const [progress, setProgress] = useState(0)
-  
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [visibility, setVisibility] = useState('private')
+
+  const [bucket, setBucket] = useState('')
+  const [customMetadata, setCustomMetadata] = useState<{key: string, value: string}[]>([])
+
+  const addMetadataField = () => {
+    setCustomMetadata([...customMetadata, { key: '', value: '' }])
+  }
+
+  const updateMetadataField = (index: number, field: 'key' | 'value', val: string) => {
+    const newMetadata = [...customMetadata]
+    newMetadata[index][field] = val
+    setCustomMetadata(newMetadata)
+  }
+
+  const removeMetadataField = (index: number) => {
+    const newMetadata = [...customMetadata]
+    newMetadata.splice(index, 1)
+    setCustomMetadata(newMetadata)
+  }
 
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -30,13 +45,11 @@ export function UploadForm() {
     e.preventDefault()
     e.stopPropagation()
     setDragActive(false)
-    
+
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const file = e.dataTransfer.files[0]
       if (file.type.startsWith('video/')) {
         setSelectedFile(file)
-        // Auto-fill title with filename (without extension)
-        setTitle(file.name.replace(/\.[^/.]+$/, ""))
       } else {
         alert("Please upload a valid video file")
       }
@@ -48,28 +61,33 @@ export function UploadForm() {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0]
       setSelectedFile(file)
-      setTitle(file.name.replace(/\.[^/.]+$/, ""))
     }
   }
 
+  const abortControllerRef = useRef<AbortController | null>(null)
+
   const performUpload = async () => {
     if (!selectedFile) return;
-    
+
     try {
       setUploadStatus('uploading')
       setProgress(0)
+
+      abortControllerRef.current = new AbortController()
 
       // 1. Init resumable session
       const initRes = await fetch('/api/youtube/upload/init', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          title,
-          description,
-          visibility,
+          filename: selectedFile.name,
+          bucket,
+          privacyStatus: 'unlisted',
+          customMetadata,
           fileSize: selectedFile.size,
           mimeType: selectedFile.type || 'video/mp4'
-        })
+        }),
+        signal: abortControllerRef.current.signal
       });
 
       if (!initRes.ok) {
@@ -77,41 +95,57 @@ export function UploadForm() {
         throw new Error(errorText || 'Failed to initialize upload');
       }
 
-      const { uploadUrl } = await initRes.json();
+      const { uploadUrl, uploadId } = await initRes.json();
 
-      // 2. Upload file via XMLHttpRequest for progress tracking
-      const xhr = new XMLHttpRequest();
+      // 2. Upload file via axios for progress tracking
+      const axios = (await import('axios')).default;
       
-      xhr.upload.addEventListener('progress', (event) => {
-        if (event.lengthComputable) {
-          const percentCompleted = Math.round((event.loaded * 100) / event.total);
-          setProgress(percentCompleted);
+      await axios.put(uploadUrl, selectedFile, {
+        headers: {
+          'Content-Type': selectedFile.type || 'video/mp4'
+        },
+        signal: abortControllerRef.current.signal,
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.total) {
+            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setProgress(percentCompleted);
+          }
         }
       });
 
-      xhr.addEventListener('load', () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          setUploadStatus('success');
-        } else {
-          console.error("Upload failed with status:", xhr.status, xhr.responseText);
-          alert('Upload failed: ' + xhr.responseText);
-          setUploadStatus('idle');
-        }
-      });
+      // 3. Mark complete
+      try {
+        await fetch('/api/youtube/upload/complete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ uploadId }),
+          signal: abortControllerRef.current.signal
+        });
+      } catch (e) {
+        console.error('Failed to update completion status', e);
+      }
 
-      xhr.addEventListener('error', () => {
-        alert('Network error during upload');
-        setUploadStatus('idle');
-      });
-
-      xhr.open('PUT', uploadUrl, true);
-      xhr.setRequestHeader('Content-Type', selectedFile.type || 'video/mp4');
-      xhr.send(selectedFile);
+      setUploadStatus('success');
 
     } catch (error: any) {
-      console.error(error);
-      alert(error.message || 'An error occurred during upload');
+      if (error?.name === 'AbortError' || error?.message?.includes('canceled')) {
+        console.log('Upload cancelled');
+      } else {
+        console.error(error);
+        alert(error.message || 'An error occurred during upload');
+      }
       setUploadStatus('idle');
+      setProgress(0);
+    } finally {
+      abortControllerRef.current = null
+    }
+  }
+
+  const handleCancel = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+    } else {
+      resetForm()
     }
   }
 
@@ -125,9 +159,8 @@ export function UploadForm() {
     setSelectedFile(null)
     setUploadStatus('idle')
     setProgress(0)
-    setTitle('')
-    setDescription('')
-    setVisibility('private')
+    setBucket('')
+    setCustomMetadata([])
   }
 
   if (uploadStatus === 'success') {
@@ -138,7 +171,7 @@ export function UploadForm() {
         </div>
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Upload Complete!</h2>
         <p className="text-gray-600 mb-8 max-w-md mx-auto">
-          Your video "{title}" has been successfully uploaded to your channel as {visibility}.
+          Your video has been successfully uploaded to the <strong>{bucket || 'default'}</strong> bucket.
         </p>
         <Button onClick={resetForm} size="lg">Upload Another Video</Button>
       </div>
@@ -150,12 +183,11 @@ export function UploadForm() {
       <div className="p-8 border-b border-gray-100">
         {/* Upload Zone */}
         {!selectedFile ? (
-          <div 
-            className={`relative w-full h-64 rounded-xl border-2 border-dashed flex flex-col items-center justify-center transition-all duration-200 ease-in-out ${
-              dragActive 
-                ? 'border-red-500 bg-red-50' 
+          <div
+            className={`relative w-full h-64 rounded-xl border-2 border-dashed flex flex-col items-center justify-center transition-all duration-200 ease-in-out ${dragActive
+                ? 'border-red-500 bg-red-50'
                 : 'border-gray-300 bg-gray-50 hover:bg-gray-100 hover:border-gray-400'
-            }`}
+              }`}
             onDragEnter={handleDrag}
             onDragLeave={handleDrag}
             onDragOver={handleDrag}
@@ -177,8 +209,8 @@ export function UploadForm() {
             <p className="text-sm text-gray-500 mb-6">
               Or drag and drop video files here
             </p>
-            <Button 
-              type="button" 
+            <Button
+              type="button"
               onClick={() => inputRef.current?.click()}
               className="bg-red-600 hover:bg-red-700 text-white"
             >
@@ -197,7 +229,7 @@ export function UploadForm() {
               <p className="text-sm text-gray-500">
                 {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB • {selectedFile.type}
               </p>
-              
+
               {uploadStatus === 'uploading' && (
                 <div className="mt-4">
                   <div className="flex justify-between text-xs font-medium mb-1">
@@ -205,7 +237,7 @@ export function UploadForm() {
                     <span className="text-red-600">{progress}%</span>
                   </div>
                   <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-                    <div 
+                    <div
                       className="h-full bg-red-600 rounded-full transition-all duration-300 ease-out"
                       style={{ width: `${progress}%` }}
                     />
@@ -213,9 +245,9 @@ export function UploadForm() {
                 </div>
               )}
             </div>
-            
+
             {uploadStatus === 'idle' && (
-              <button 
+              <button
                 type="button"
                 onClick={() => setSelectedFile(null)}
                 className="w-10 h-10 rounded-full hover:bg-gray-200 flex items-center justify-center text-gray-500 transition-colors"
@@ -228,77 +260,87 @@ export function UploadForm() {
         )}
       </div>
 
-      <div className="p-8 grid grid-cols-1 md:grid-cols-3 gap-8 bg-gray-50/50">
-        <div className="md:col-span-2 space-y-6">
-          <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-2">
-              Title (required)
-            </label>
-            <input
-              type="text"
-              required
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all"
-              placeholder="Add a title that describes your video"
-              disabled={uploadStatus === 'uploading'}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-2">
-              Description
-            </label>
-            <textarea
-              rows={5}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all resize-none"
-              placeholder="Tell viewers about your video"
-              disabled={uploadStatus === 'uploading'}
-            />
-          </div>
+      <div className="p-8 bg-gray-50/50 space-y-6">
+        <div>
+          <label className="block text-sm font-semibold text-gray-900 mb-2">
+            Bucket (optional)
+          </label>
+          <input
+            type="text"
+            value={bucket}
+            onChange={(e) => setBucket(e.target.value)}
+            className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-zinc-900 focus:border-zinc-900 outline-none transition-all"
+            placeholder="e.g. marketing, backups"
+            disabled={uploadStatus === 'uploading'}
+          />
+          <p className="text-xs text-gray-500 mt-2">
+            Used to organize your uploaded videos. Defaults to 'default' if left blank.
+          </p>
         </div>
 
-        <div className="space-y-6">
-          <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-2">
-              Visibility
+        <div className="pt-4 border-t border-gray-200">
+          <div className="flex items-center justify-between mb-4">
+            <label className="block text-sm font-semibold text-gray-900">
+              Custom Metadata
             </label>
-            <select
-              value={visibility}
-              onChange={(e) => setVisibility(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all appearance-none bg-white"
+            <button
+              type="button"
+              onClick={addMetadataField}
               disabled={uploadStatus === 'uploading'}
+              className="text-sm text-red-600 hover:text-red-700 font-medium"
             >
-              <option value="public">Public</option>
-              <option value="unlisted">Unlisted</option>
-              <option value="private">Private</option>
-            </select>
+              + Add Field
+            </button>
           </div>
-
-          <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 flex gap-3 text-blue-800 text-sm">
-            <Info className="w-5 h-5 shrink-0 mt-0.5" />
-            <p>
-              By submitting your videos to YouTube, you acknowledge that you agree to YouTube's Terms of Service and Community Guidelines.
-            </p>
+          
+          <div className="space-y-3">
+            {customMetadata.length === 0 && (
+              <p className="text-sm text-gray-500 italic">No custom metadata added.</p>
+            )}
+            {customMetadata.map((meta, index) => (
+              <div key={index} className="flex gap-3 items-center">
+                <input
+                  type="text"
+                  value={meta.key}
+                  onChange={(e) => updateMetadataField(index, 'key', e.target.value)}
+                  placeholder="Key (e.g. Campaign)"
+                  className="flex-1 px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-zinc-900 focus:border-zinc-900 outline-none transition-all"
+                  disabled={uploadStatus === 'uploading'}
+                />
+                <input
+                  type="text"
+                  value={meta.value}
+                  onChange={(e) => updateMetadataField(index, 'value', e.target.value)}
+                  placeholder="Value (e.g. Summer2024)"
+                  className="flex-1 px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-zinc-900 focus:border-zinc-900 outline-none transition-all"
+                  disabled={uploadStatus === 'uploading'}
+                />
+                <button
+                  type="button"
+                  onClick={() => removeMetadataField(index)}
+                  disabled={uploadStatus === 'uploading'}
+                  className="p-2 text-gray-400 hover:text-red-600 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
       <div className="p-6 border-t border-gray-100 flex justify-end gap-3 bg-white">
-        <Button 
-          type="button" 
-          variant="outline" 
-          onClick={resetForm}
-          disabled={uploadStatus === 'uploading'}
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handleCancel}
         >
           Cancel
         </Button>
-        <Button 
+        <Button
           type="submit"
-          disabled={!selectedFile || uploadStatus === 'uploading' || !title.trim()}
-          className="bg-red-600 hover:bg-red-700 text-white min-w-[120px]"
+          disabled={!selectedFile || uploadStatus === 'uploading'}
+          className="bg-zinc-900 hover:bg-zinc-800 text-white min-w-[120px]"
         >
           {uploadStatus === 'uploading' ? (
             <>

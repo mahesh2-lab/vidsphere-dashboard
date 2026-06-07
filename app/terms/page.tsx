@@ -6,7 +6,7 @@ export default function TermsOfService() {
       <Link href="/" className="text-sm text-red-600 hover:text-red-700 font-medium mb-8 inline-block">
         &larr; Back to Home
       </Link>
-      
+
       <h1 className="text-4xl font-bold text-gray-900 mb-4">Terms of Service</h1>
       <p className="text-gray-500 mb-12">Last updated: {new Date().toLocaleDateString()}</p>
 
@@ -14,7 +14,7 @@ export default function TermsOfService() {
         <section>
           <h2 className="text-2xl font-bold text-gray-900 mb-4">1. Acceptance of Terms</h2>
           <p>
-            By accessing or using the VidSphere application ("Service"), you agree to be bound by these 
+            By accessing or using the VidSphere application ("Service"), you agree to be bound by these
             Terms of Service. If you disagree with any part of the terms, then you may not access the Service.
           </p>
         </section>
@@ -42,7 +42,7 @@ export default function TermsOfService() {
         <section>
           <h2 className="text-2xl font-bold text-gray-900 mb-4">4. Intellectual Property</h2>
           <p>
-            The Service and its original content, features, and functionality are and will remain the exclusive property of 
+            The Service and its original content, features, and functionality are and will remain the exclusive property of
             VidSphere and its licensors. The Service is protected by copyright, trademark, and other laws.
           </p>
         </section>
@@ -50,7 +50,7 @@ export default function TermsOfService() {
         <section>
           <h2 className="text-2xl font-bold text-gray-900 mb-4">5. Termination</h2>
           <p>
-            We may terminate or suspend your account immediately, without prior notice or liability, for any reason whatsoever, 
+            We may terminate or suspend your account immediately, without prior notice or liability, for any reason whatsoever,
             including without limitation if you breach the Terms. Upon termination, your right to use the Service will immediately cease.
           </p>
         </section>
@@ -58,7 +58,7 @@ export default function TermsOfService() {
         <section>
           <h2 className="text-2xl font-bold text-gray-900 mb-4">6. Changes to Terms</h2>
           <p>
-            We reserve the right, at our sole discretion, to modify or replace these Terms at any time. We will try to provide at least 
+            We reserve the right, at our sole discretion, to modify or replace these Terms at any time. We will try to provide at least
             30 days notice prior to any new terms taking effect. What constitutes a material change will be determined at our sole discretion.
           </p>
         </section>
