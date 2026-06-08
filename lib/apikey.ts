@@ -1,11 +1,14 @@
 import crypto from 'crypto';
 
-const SECRET = process.env.API_KEY_SECRET!;
+function getSecret(): string {
+  const secret = process.env.API_KEY_SECRET;
+  if (!secret) {
+    throw new Error('API_KEY_SECRET is not set in environment variables.');
+  }
+  return secret;
+}
 
 /**
- * Generates a new raw API key.
- * Format: sk_<64 hex chars>
- */
 export function generateApiKey(): string {
   const random = crypto.randomBytes(32).toString('hex');
   return `sk_${random}`;
@@ -17,14 +20,11 @@ export function generateApiKey(): string {
  */
 export function hashApiKey(rawKey: string): string {
   return crypto
-    .createHmac('sha256', SECRET)
+    .createHmac('sha256', getSecret())
     .update(rawKey)
     .digest('hex');
 }
 
-/**
- * Constant-time comparison to prevent timing attacks.
- */
 export function verifyApiKey(incoming: string, storedHash: string): boolean {
   const incomingHash = hashApiKey(incoming);
   try {
@@ -33,7 +33,6 @@ export function verifyApiKey(incoming: string, storedHash: string): boolean {
       Buffer.from(storedHash,   'hex'),
     );
   } catch {
-    // Buffer lengths differ — key is invalid
     return false;
   }
 }
