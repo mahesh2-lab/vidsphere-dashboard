@@ -1,5 +1,6 @@
 import { Play } from 'lucide-react'
 import { StatusBadge } from './status-badge'
+import { CopyButton } from './copy-button'
 import Link from 'next/link'
 
 export function VideoListRow({ 
@@ -31,7 +32,13 @@ export function VideoListRow({
       </div>
       <div className="flex-1 min-w-0">
         <h3 className="text-sm font-medium text-zinc-800 truncate" title={title}>{title}</h3>
-        <p className="text-xs text-zinc-400 font-mono mt-1">
+        <div className="flex items-center gap-1 mt-1">
+          <p className="text-[10px] text-zinc-500 font-mono truncate" title={id}>
+            ID: {id}
+          </p>
+          <CopyButton text={id} />
+        </div>
+        <p className="text-xs text-zinc-400 font-mono mt-0.5">
           Bucket: {bucket}
         </p>
       </div>

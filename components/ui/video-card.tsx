@@ -1,5 +1,6 @@
 import { Play } from 'lucide-react'
 import { StatusBadge } from './status-badge'
+import { CopyButton } from './copy-button'
 import Link from 'next/link'
 
 export function VideoCard({ 
@@ -29,9 +30,15 @@ export function VideoCard({
           {duration}
         </div>
       </div>
-      <div className="p-3">
+      <div className="p-3 overflow-hidden">
         <h3 className="text-sm font-medium text-zinc-800 truncate" title={title}>{title}</h3>
-        <p className="text-xs text-zinc-400 font-mono mt-1 mb-2">
+        <div className="flex items-center gap-1 mt-1">
+          <p className="text-[10px] text-zinc-500 font-mono truncate" title={id}>
+            ID: {id}
+          </p>
+          <CopyButton text={id} />
+        </div>
+        <p className="text-xs text-zinc-400 font-mono mt-0.5 mb-2">
           Bucket: {bucket}
         </p>
         <StatusBadge status={status} />
