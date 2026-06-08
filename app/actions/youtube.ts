@@ -2,7 +2,7 @@
 
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
-import { youtubeAccount, youtubeCache } from '@/lib/db/schema'
+import { youtubeAccount, youtubeCache, uploads } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
 import { headers } from 'next/headers'
 import { revalidatePath, revalidateTag } from 'next/cache'
@@ -172,11 +172,21 @@ export async function fetchYouTubeVideos(): Promise<YouTubeVideo[]> {
       return []
     }
     
+    // Fetch mapping from uploads table
+    const dbUploads = await db.query.uploads.findMany({
+      where: eq(uploads.userId, userId)
+    });
+    
+    const uploadMap = new Map();
+    dbUploads.forEach(u => {
+      if (u.videoId) uploadMap.set(u.videoId, u.id);
+    });
+    
     interface VideoSnippet { title: string, thumbnails?: { maxres?: { url: string }, high?: { url: string }, medium?: { url: string }, default?: { url: string } }, tags?: string[], publishedAt: string }
     interface VideoItem { id: string, snippet: VideoSnippet, status?: { uploadStatus: string }, contentDetails?: { duration: string } }
 
     const videoRecords = statsResponse.items?.map((item: VideoItem) => ({
-      id: `vid_${item.id}`,
+      id: uploadMap.get(item.id) || `vid_${item.id}`,
       userId,
       channelId: channel.id,
       videoId: item.id,
@@ -195,7 +205,18 @@ export async function fetchYouTubeVideos(): Promise<YouTubeVideo[]> {
 export async function fetchYouTubeVideo(videoId: string): Promise<YouTubeVideo | null> {
   const userId = await getUserId()
   
-  const actualVideoId = videoId.startsWith('vid_') ? videoId.replace('vid_', '') : videoId;
+  let actualVideoId = videoId.startsWith('vid_') ? videoId.replace('vid_', '') : videoId;
+  let dbId = videoId;
+  
+  // If it's not a 'vid_' prefixed ID, it might be a DB UUID. Look it up.
+  if (!videoId.startsWith('vid_')) {
+    const upload = await db.query.uploads.findFirst({
+      where: eq(uploads.id, videoId)
+    });
+    if (upload && upload.videoId) {
+      actualVideoId = upload.videoId;
+    }
+  }
   
   return getCachedData<YouTubeVideo | null>(userId, `video_${actualVideoId}`, 5, async () => {
     const accessToken = await getGoogleAccessToken(userId)
@@ -223,8 +244,18 @@ export async function fetchYouTubeVideo(videoId: string): Promise<YouTubeVideo |
     
     const item = statsResponse.items[0];
 
+    // If we didn't look up the DB ID previously, try to find it now to populate the `id` field properly
+    if (videoId.startsWith('vid_')) {
+      const upload = await db.query.uploads.findFirst({
+        where: eq(uploads.videoId, actualVideoId)
+      });
+      if (upload) {
+        dbId = upload.id;
+      }
+    }
+
     return {
-      id: `vid_${item.id}`,
+      id: dbId.startsWith('vid_') && dbId === videoId ? `vid_${item.id}` : dbId,
       userId,
       channelId: channel.id,
       videoId: item.id,
