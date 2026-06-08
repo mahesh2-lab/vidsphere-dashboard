@@ -8,14 +8,23 @@ function getSecret(): string {
   return secret;
 }
 
+const BASE62 = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+
+function generateBase62(length: number): string {
+  let result = '';
+  const randomBytes = crypto.randomBytes(length);
+  for (let i = 0; i < length; i++) {
+    result += BASE62[randomBytes[i] % 62];
+  }
+  return result;
+}
+
 /**
- * Generate a random 40-char alphanumeric API key
+ * Generate a random 40-char API key with prefix
  */
 export function generateApiKey(): string {
-  return crypto
-    .randomBytes(20)
-    .toString('hex')
-    .slice(0, 40);
+  const envPrefix = process.env.NODE_ENV === 'production' ? 'live_' : 'test_';
+  return `vs_${envPrefix}${generateBase62(32)}`;
 }
 
 /**

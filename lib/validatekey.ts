@@ -15,9 +15,9 @@ export type ApiKeyRecord = typeof apiKeys.$inferSelect;
 export async function validateApiKey(
   rawKey: string | null,
 ): Promise<ApiKeyRecord | null> {
-  if (!rawKey || !rawKey.startsWith('sk_')) return null;
+  if (!rawKey || !rawKey.startsWith('vs_')) return null;
 
-  const prefix = rawKey.slice(0, 10);
+  const prefix = rawKey.slice(0, 12);
 
   const candidates = await db
     .select()

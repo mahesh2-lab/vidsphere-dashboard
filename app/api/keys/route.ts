@@ -63,7 +63,7 @@ export async function POST(req: Request) {
 
   const rawKey = generateApiKey();
   const keyHash = hashApiKey(rawKey);
-  const prefix  = rawKey.slice(0, 10);
+  const prefix  = rawKey.slice(0, 12);
 
   const [record] = await db
     .insert(apiKeys)
