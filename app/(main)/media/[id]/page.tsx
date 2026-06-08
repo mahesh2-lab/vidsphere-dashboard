@@ -81,9 +81,9 @@ async function VideoDetails({ videoId }: { videoId: string }) {
             <DataRow label="Video ID">
               <div className="flex items-center gap-1.5 justify-end">
                 <span className="text-sm text-zinc-700 font-mono truncate max-w-[140px]" title={video.id}>
-                  {video.id}
+                  {video.videoId}
                 </span>
-                <CopyButton text={video.id} />
+                <CopyButton text={video.videoId} />
               </div>
             </DataRow>
             <DataRow label="Format" value="MP4" />

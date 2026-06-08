@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { uploadId } = body;
+    const { uploadId, videoId } = body;
 
     if (!uploadId) {
       return new NextResponse("Missing uploadId", { status: 400 });
@@ -37,6 +37,7 @@ export async function POST(request: NextRequest) {
 
     await db.update(uploads).set({
       status: "completed",
+      videoId: videoId || null,
       completedAt: new Date()
     }).where(eq(uploads.id, uploadId));
 

@@ -178,15 +178,17 @@ export async function fetchYouTubeVideos(): Promise<YouTubeVideo[]> {
     });
     
     const uploadMap = new Map();
+    const titleMap = new Map();
     dbUploads.forEach(u => {
       if (u.videoId) uploadMap.set(u.videoId, u.id);
+      else titleMap.set(u.title, u.id);
     });
     
     interface VideoSnippet { title: string, thumbnails?: { maxres?: { url: string }, high?: { url: string }, medium?: { url: string }, default?: { url: string } }, tags?: string[], publishedAt: string }
     interface VideoItem { id: string, snippet: VideoSnippet, status?: { uploadStatus: string }, contentDetails?: { duration: string } }
 
     const videoRecords = statsResponse.items?.map((item: VideoItem) => ({
-      id: uploadMap.get(item.id) || `vid_${item.id}`,
+      id: uploadMap.get(item.id) || titleMap.get(item.snippet.title) || `vid_${item.id}`,
       userId,
       channelId: channel.id,
       videoId: item.id,
@@ -213,8 +215,16 @@ export async function fetchYouTubeVideo(videoId: string): Promise<YouTubeVideo |
     const upload = await db.query.uploads.findFirst({
       where: eq(uploads.id, videoId)
     });
-    if (upload && upload.videoId) {
-      actualVideoId = upload.videoId;
+    if (upload) {
+      if (upload.videoId) {
+        actualVideoId = upload.videoId;
+      } else {
+        // Fallback: If DB record doesn't have videoId, we need to fetch all videos
+        // and find the YouTube videoId matching the title.
+        const allVideos = await fetchYouTubeVideos();
+        const matched = allVideos.find(v => v.id === videoId);
+        if (matched) actualVideoId = matched.videoId;
+      }
     }
   }
   
@@ -251,6 +261,12 @@ export async function fetchYouTubeVideo(videoId: string): Promise<YouTubeVideo |
       });
       if (upload) {
         dbId = upload.id;
+      } else {
+        // Fallback title match
+        const uploadByTitle = await db.query.uploads.findFirst({
+          where: eq(uploads.title, item.snippet.title)
+        });
+        if (uploadByTitle) dbId = uploadByTitle.id;
       }
     }
 

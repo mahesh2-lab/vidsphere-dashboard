@@ -100,7 +100,7 @@ export function UploadForm() {
       // 2. Upload file via axios for progress tracking
       const axios = (await import('axios')).default;
       
-      await axios.put(uploadUrl, selectedFile, {
+      const putRes = await axios.put(uploadUrl, selectedFile, {
         headers: {
           'Content-Type': selectedFile.type || 'video/mp4'
         },
@@ -113,12 +113,14 @@ export function UploadForm() {
         }
       });
 
+      const videoId = putRes.data?.id;
+
       // 3. Mark complete
       try {
         await fetch('/api/youtube/upload/complete', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ uploadId }),
+          body: JSON.stringify({ uploadId, videoId }),
           signal: abortControllerRef.current.signal
         });
       } catch (e) {
