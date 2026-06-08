@@ -11,8 +11,10 @@ import {
   Activity, 
   BookOpen, 
   Settings, 
-  CreditCard
+  CreditCard,
+  LogOut
 } from 'lucide-react'
+import { authClient } from '@/lib/auth-client'
 
 const navigation = [
   {
@@ -89,13 +91,28 @@ export function Sidebar() {
       </nav>
 
       {/* Bottom Avatar / Profile */}
-      <div className="p-4 border-t border-[#e9e9e7] flex-shrink-0">
-        <Link href="/settings" className="flex items-center gap-3">
+      <div className="p-4 border-t border-[#e9e9e7] flex-shrink-0 flex items-center justify-between">
+        <Link href="/settings" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
           <div className="w-8 h-8 rounded-full bg-zinc-200 flex items-center justify-center text-xs font-medium text-zinc-600">
             U
           </div>
-          <span className="text-sm text-zinc-600 font-medium">User Account</span>
+          <span className="text-sm text-zinc-600 font-medium truncate max-w-[100px]">User Account</span>
         </Link>
+        <button 
+          onClick={async () => {
+            await authClient.signOut({
+              fetchOptions: {
+                onSuccess: () => {
+                  window.location.href = '/sign-in'
+                }
+              }
+            })
+          }}
+          className="p-1.5 text-zinc-400 hover:text-zinc-900 hover:bg-[#e9e9e7] rounded-md transition-colors"
+          title="Sign out"
+        >
+          <LogOut className="w-4 h-4" />
+        </button>
       </div>
     </div>
   )
