@@ -15,6 +15,8 @@ async function VideoDetails({ videoId }: { videoId: string }) {
   let video: any = null;
   try {
     video = await fetchYouTubeVideo(videoId);
+    console.log(video);
+    
   } catch (e) {
     console.error(e);
   }
@@ -81,9 +83,9 @@ async function VideoDetails({ videoId }: { videoId: string }) {
             <DataRow label="Video ID">
               <div className="flex items-center gap-1.5 justify-end">
                 <span className="text-sm text-zinc-700 font-mono truncate max-w-[140px]" title={video.id}>
-                  {video.videoId}
+                  {video.id}
                 </span>
-                <CopyButton text={video.videoId} />
+                <CopyButton text={video.id} />
               </div>
             </DataRow>
             <DataRow label="Format" value="MP4" />
