@@ -9,6 +9,7 @@ import { Panel } from '@/components/ui/panel'
 import { DataRow } from '@/components/ui/data-row'
 import { CodeBlock } from '@/components/ui/code-block'
 import { YouTubePlayer } from '@/components/ui/youtube-player'
+import { CopyButton } from '@/components/ui/copy-button'
 
 async function VideoDetails({ videoId }: { videoId: string }) {
   let video: any = null;
@@ -77,7 +78,14 @@ async function VideoDetails({ videoId }: { videoId: string }) {
         {/* Right Column */}
         <div className="w-80 shrink-0 flex flex-col gap-4">
           <Panel title="Asset Info">
-            <DataRow label="Video ID" value={video.id.substring(0, 10) + '...'} />
+            <DataRow label="Video ID">
+              <div className="flex items-center gap-1.5 justify-end">
+                <span className="text-sm text-zinc-700 font-mono truncate max-w-[140px]" title={video.id}>
+                  {video.id}
+                </span>
+                <CopyButton text={video.id} />
+              </div>
+            </DataRow>
             <DataRow label="Format" value="MP4" />
             <DataRow label="Size" value="142.3 MB" />
             <DataRow label="Resolution" value="1920 x 1080" />
