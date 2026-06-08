@@ -9,9 +9,13 @@ function getSecret(): string {
 }
 
 /**
+ * Generate a random 40-char alphanumeric API key
+ */
 export function generateApiKey(): string {
-  const random = crypto.randomBytes(32).toString('hex');
-  return `sk_${random}`;
+  return crypto
+    .randomBytes(20)
+    .toString('hex')
+    .slice(0, 40);
 }
 
 /**
@@ -30,7 +34,7 @@ export function verifyApiKey(incoming: string, storedHash: string): boolean {
   try {
     return crypto.timingSafeEqual(
       Buffer.from(incomingHash, 'hex'),
-      Buffer.from(storedHash,   'hex'),
+      Buffer.from(storedHash, 'hex'),
     );
   } catch {
     return false;
