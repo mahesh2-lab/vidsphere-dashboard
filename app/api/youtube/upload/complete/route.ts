@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { uploads } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { headers } from "next/headers";
-import { logApiCall } from "@/lib/api-logger";
+import { logApiCall } from '@/features/developers/services/api-logger';
 
 export async function POST(request: NextRequest) {
   try {

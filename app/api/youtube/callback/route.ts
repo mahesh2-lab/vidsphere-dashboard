@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { oauth2Client } from "@/lib/google";
+import { oauth2Client } from '@/features/youtube/services/google';
 import { google } from "googleapis";
 import { db } from "@/lib/db";
 import { youtubeAccount } from "@/lib/db/schema";

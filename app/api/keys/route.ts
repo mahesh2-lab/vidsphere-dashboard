@@ -9,7 +9,7 @@
 import { db } from '@/lib/db';
 import { apiKeys, youtubeAccount } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
-import { generateApiKey, hashApiKey } from '@/lib/apikey';
+import { generateApiKey, hashApiKey } from '@/features/developers/services/apikey';
 import { auth } from '@/lib/auth'; // your Better Auth instance
 import { headers } from 'next/headers';
 

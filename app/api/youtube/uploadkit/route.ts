@@ -3,9 +3,9 @@
 import { db } from '@/lib/db';
 import { youtubeAccount, uploads } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
-import { validateApiKey } from '@/lib/validatekey';
-import { oauth2Client } from '@/lib/google';
-import { decrypt } from '@/lib/encryption';
+import { validateApiKey } from '@/features/developers/services/validatekey';
+import { oauth2Client } from '@/features/youtube/services/google';
+import { decrypt } from '@/lib/utils/encryption';
 import { google } from 'googleapis';
 import path from 'path';
 

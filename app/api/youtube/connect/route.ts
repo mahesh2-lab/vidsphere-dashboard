@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { oauth2Client, YOUTUBE_SCOPES } from "@/lib/google";
+import { oauth2Client, YOUTUBE_SCOPES } from '@/features/youtube/services/google';
 import { headers } from "next/headers";
 import crypto from "crypto";
 

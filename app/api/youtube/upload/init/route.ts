@@ -4,10 +4,10 @@ import { db } from "@/lib/db";
 import { youtubeAccount, uploads } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
-import { oauth2Client } from "@/lib/google";
+import { oauth2Client } from '@/features/youtube/services/google';
 import axios from "axios";
-import { logApiCall } from "@/lib/api-logger";
-import { decrypt } from "@/lib/encryption";
+import { logApiCall } from '@/features/developers/services/api-logger';
+import { decrypt } from '@/lib/utils/encryption';
 
 export async function POST(request: NextRequest) {
   try {
